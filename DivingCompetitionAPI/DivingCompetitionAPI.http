@@ -1,0 +1,6 @@
+@DivingCompetitionAPI_HostAddress = http://localhost:5074
+
+GET {{DivingCompetitionAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
