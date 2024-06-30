@@ -3,10 +3,12 @@
     public class Competition
     {
         public int CompetitionId { get; set; }
-        public string Code { get; set; }
-        public string Name { get; set; }
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
         public DateTime Date { get; set; }
-        public ICollection<Diver> Divers { get; set; }
-        public ICollection<Judge> Judges { get; set; }
+
+        // Navegación hacia los CompetitionDiver y CompetitionJudge
+        public ICollection<CompetitionDiver> CompetitionDivers { get; set; } = new List<CompetitionDiver>();
+        public ICollection<CompetitionJudge> CompetitionJudges { get; set; } = new List<CompetitionJudge>();
     }
 }

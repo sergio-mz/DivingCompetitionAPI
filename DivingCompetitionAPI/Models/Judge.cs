@@ -3,8 +3,8 @@
     public class Judge
     {
         public int JudgeId { get; set; }
-        public string Name { get; set; }
-        public int CompetitionId { get; set; }
-        public Competition Competition { get; set; }
+        public string Name { get; set; } = "";
+
+        public ICollection<CompetitionJudge> CompetitionJudges { get; set; } = new List<CompetitionJudge>();
     }
 }
