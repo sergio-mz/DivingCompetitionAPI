@@ -45,7 +45,9 @@ namespace DivingCompetitionAPI.Migrations
                 {
                     DiveId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DiveCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DiveCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Group = table.Column<string>(type: "nvarchar(1)", nullable: false),
+                    Height = table.Column<double>(type: "float", nullable: false),
                     Difficulty = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
@@ -106,7 +108,7 @@ namespace DivingCompetitionAPI.Migrations
                         column: x => x.CompetitionId,
                         principalTable: "Competitions",
                         principalColumn: "CompetitionId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_DiverDives_Divers_DiverId",
                         column: x => x.DiverId,
@@ -151,18 +153,18 @@ namespace DivingCompetitionAPI.Migrations
                 {
                     ScoreId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Points = table.Column<double>(type: "float", nullable: false),
-                    DiverDiveDiverId = table.Column<int>(type: "int", nullable: false),
-                    DiverDiveDiveId = table.Column<int>(type: "int", nullable: false),
-                    DiverDiveCompetitionId = table.Column<int>(type: "int", nullable: false),
-                    JudgeId = table.Column<int>(type: "int", nullable: false)
+                    JudgeId = table.Column<int>(type: "int", nullable: false),
+                    DiverId = table.Column<int>(type: "int", nullable: false),
+                    DiveId = table.Column<int>(type: "int", nullable: false),
+                    CompetitionId = table.Column<int>(type: "int", nullable: false),
+                    Points = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Scores", x => x.ScoreId);
                     table.ForeignKey(
-                        name: "FK_Scores_DiverDives_DiverDiveDiverId_DiverDiveDiveId_DiverDiveCompetitionId",
-                        columns: x => new { x.DiverDiveDiverId, x.DiverDiveDiveId, x.DiverDiveCompetitionId },
+                        name: "FK_Scores_DiverDives_DiverId_DiveId_CompetitionId",
+                        columns: x => new { x.DiverId, x.DiveId, x.CompetitionId },
                         principalTable: "DiverDives",
                         principalColumns: new[] { "DiverId", "DiveId", "CompetitionId" },
                         onDelete: ReferentialAction.Restrict);
@@ -195,14 +197,27 @@ namespace DivingCompetitionAPI.Migrations
                 column: "DiveId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Scores_DiverDiveDiverId_DiverDiveDiveId_DiverDiveCompetitionId",
-                table: "Scores",
-                columns: new[] { "DiverDiveDiverId", "DiverDiveDiveId", "DiverDiveCompetitionId" });
+                name: "IX_DiverDives_DiverId_DiveId_CompetitionId",
+                table: "DiverDives",
+                columns: new[] { "DiverId", "DiveId", "CompetitionId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Scores_JudgeId",
+                name: "IX_Dives_DiveCode_Group_Height",
+                table: "Dives",
+                columns: new[] { "DiveCode", "Group", "Height" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Scores_DiverId_DiveId_CompetitionId",
                 table: "Scores",
-                column: "JudgeId");
+                columns: new[] { "DiverId", "DiveId", "CompetitionId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Scores_JudgeId_DiverId_DiveId_CompetitionId",
+                table: "Scores",
+                columns: new[] { "JudgeId", "DiverId", "DiveId", "CompetitionId" },
+                unique: true);
         }
 
         /// <inheritdoc />

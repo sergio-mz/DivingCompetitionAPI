@@ -1,4 +1,6 @@
-﻿namespace DivingCompetitionAPI.Models
+﻿using System.Text.Json.Serialization;
+
+namespace DivingCompetitionAPI.Models
 {
     public class DiverDive
     {
@@ -11,7 +13,8 @@
         public int CompetitionId { get; set; }
         public Competition? Competition { get; set; }
 
-        public ICollection<Score> Scores { get; set; } = new List<Score>();
+        [JsonIgnore]
+        public ICollection<Score>? Scores { get; set; }
     }
 }
 

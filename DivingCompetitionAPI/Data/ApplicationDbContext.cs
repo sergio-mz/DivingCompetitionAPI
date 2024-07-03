@@ -18,7 +18,7 @@ namespace DivingCompetitionAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            //base.OnModelCreating(modelBuilder);
 
             // Configuración de las claves primarias compuestas y relaciones
 
@@ -30,6 +30,24 @@ namespace DivingCompetitionAPI.Data
 
             modelBuilder.Entity<DiverDive>()
                 .HasKey(dd => new { dd.DiverId, dd.DiveId, dd.CompetitionId });
+
+            modelBuilder.Entity<Score>()
+                .HasKey(s => s.ScoreId);
+
+            // Asegurar que no haya duplicados en Dive
+            modelBuilder.Entity<Dive>()
+                .HasIndex(d => new { d.DiveCode, d.Group, d.Height })
+                .IsUnique();
+
+            // Asegurar que no haya duplicados en Score
+            modelBuilder.Entity<Score>()
+                .HasIndex(s => new { s.JudgeId, s.DiverId, s.DiveId, s.CompetitionId })
+                .IsUnique();
+
+            // Asegurar que no haya duplicados en DiverDive
+            modelBuilder.Entity<DiverDive>()
+                .HasIndex(dd => new { dd.DiverId, dd.DiveId, dd.CompetitionId })
+                .IsUnique();
 
             // Relaciones entre entidades
 
@@ -69,79 +87,23 @@ namespace DivingCompetitionAPI.Data
                 .HasForeignKey(dd => dd.DiveId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<DiverDive>()
+                .HasOne(dd => dd.Competition)
+                .WithMany(c => c.DiverDives)
+                .HasForeignKey(dd => dd.CompetitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Score>()
                 .HasOne(s => s.DiverDive)
                 .WithMany(dd => dd.Scores)
-                .HasForeignKey(s => new { s.DiverDiveDiverId, s.DiverDiveDiveId, s.DiverDiveCompetitionId })
+                .HasForeignKey(s => new { s.DiverId, s.DiveId, s.CompetitionId })
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Score>()
                 .HasOne(s => s.Judge)
-                .WithMany()
+                .WithMany(j => j.Scores)
                 .HasForeignKey(s => s.JudgeId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
-
-
-
-
-/*
-using DivingCompetitionAPI.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace DivingCompetitionAPI.Data
-{
-    public class ApplicationDbContext : DbContext
-    {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-        public DbSet<Competition> Competitions { get; set; }
-        public DbSet<Judge> Judges { get; set; }
-        public DbSet<Diver> Divers { get; set; }
-        public DbSet<Dive> Dives { get; set; }
-        public DbSet<Score> Scores { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Configurar relaciones entre Competition y Diver
-            modelBuilder.Entity<Competition>()
-                .HasMany(c => c.Divers)
-                .WithOne(d => d.Competition)
-                .HasForeignKey(d => d.CompetitionId)
-                .OnDelete(DeleteBehavior.Restrict); // Restringir eliminación en cascada
-
-            // Configurar relaciones entre Competition y Judge
-            modelBuilder.Entity<Competition>()
-                .HasMany(c => c.Judges)
-                .WithOne(j => j.Competition)
-                .HasForeignKey(j => j.CompetitionId)
-                .OnDelete(DeleteBehavior.Restrict); // Restringir eliminación en cascada
-
-            // Configurar relaciones entre Diver y Dive
-            modelBuilder.Entity<Diver>()
-                .HasMany(d => d.Dives)
-                .WithOne(dv => dv.Diver)
-                .HasForeignKey(dv => dv.DiverId)
-                .OnDelete(DeleteBehavior.Restrict); // Restringir eliminación en cascada
-
-            // Configurar relaciones entre Dive y Score
-            modelBuilder.Entity<Dive>()
-                .HasMany(d => d.Scores)
-                .WithOne(s => s.Dive)
-                .HasForeignKey(s => s.DiveId)
-                .OnDelete(DeleteBehavior.Restrict); // Restringir eliminación en cascada
-
-            // Configurar relaciones entre Judge y Score
-            modelBuilder.Entity<Judge>()
-                .HasMany(j => j.Scores)
-                .WithOne(s => s.Judge)
-                .HasForeignKey(s => s.JudgeId)
-                .OnDelete(DeleteBehavior.Restrict); // Restringir eliminación en cascada
-        }
-    }
-}
-*/

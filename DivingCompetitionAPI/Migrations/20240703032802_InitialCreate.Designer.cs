@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DivingCompetitionAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240630041629_InitialCreate")]
+    [Migration("20240703032802_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -92,9 +92,19 @@ namespace DivingCompetitionAPI.Migrations
 
                     b.Property<string>("DiveCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Group")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<double>("Height")
+                        .HasColumnType("float");
 
                     b.HasKey("DiveId");
+
+                    b.HasIndex("DiveCode", "Group", "Height")
+                        .IsUnique();
 
                     b.ToTable("Dives");
                 });
@@ -133,6 +143,9 @@ namespace DivingCompetitionAPI.Migrations
 
                     b.HasIndex("DiveId");
 
+                    b.HasIndex("DiverId", "DiveId", "CompetitionId")
+                        .IsUnique();
+
                     b.ToTable("DiverDives");
                 });
 
@@ -161,13 +174,13 @@ namespace DivingCompetitionAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ScoreId"));
 
-                    b.Property<int>("DiverDiveCompetitionId")
+                    b.Property<int>("CompetitionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DiverDiveDiveId")
+                    b.Property<int>("DiveId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DiverDiveDiverId")
+                    b.Property<int>("DiverId")
                         .HasColumnType("int");
 
                     b.Property<int>("JudgeId")
@@ -178,9 +191,10 @@ namespace DivingCompetitionAPI.Migrations
 
                     b.HasKey("ScoreId");
 
-                    b.HasIndex("JudgeId");
+                    b.HasIndex("DiverId", "DiveId", "CompetitionId");
 
-                    b.HasIndex("DiverDiveDiverId", "DiverDiveDiveId", "DiverDiveCompetitionId");
+                    b.HasIndex("JudgeId", "DiverId", "DiveId", "CompetitionId")
+                        .IsUnique();
 
                     b.ToTable("Scores");
                 });
@@ -226,9 +240,9 @@ namespace DivingCompetitionAPI.Migrations
             modelBuilder.Entity("DivingCompetitionAPI.Models.DiverDive", b =>
                 {
                     b.HasOne("DivingCompetitionAPI.Models.Competition", "Competition")
-                        .WithMany()
+                        .WithMany("DiverDives")
                         .HasForeignKey("CompetitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("DivingCompetitionAPI.Models.Dive", "Dive")
@@ -253,14 +267,14 @@ namespace DivingCompetitionAPI.Migrations
             modelBuilder.Entity("DivingCompetitionAPI.Models.Score", b =>
                 {
                     b.HasOne("DivingCompetitionAPI.Models.Judge", "Judge")
-                        .WithMany()
+                        .WithMany("Scores")
                         .HasForeignKey("JudgeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("DivingCompetitionAPI.Models.DiverDive", "DiverDive")
                         .WithMany("Scores")
-                        .HasForeignKey("DiverDiveDiverId", "DiverDiveDiveId", "DiverDiveCompetitionId")
+                        .HasForeignKey("DiverId", "DiveId", "CompetitionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -274,6 +288,8 @@ namespace DivingCompetitionAPI.Migrations
                     b.Navigation("CompetitionDivers");
 
                     b.Navigation("CompetitionJudges");
+
+                    b.Navigation("DiverDives");
                 });
 
             modelBuilder.Entity("DivingCompetitionAPI.Models.Dive", b =>
@@ -296,6 +312,8 @@ namespace DivingCompetitionAPI.Migrations
             modelBuilder.Entity("DivingCompetitionAPI.Models.Judge", b =>
                 {
                     b.Navigation("CompetitionJudges");
+
+                    b.Navigation("Scores");
                 });
 #pragma warning restore 612, 618
         }

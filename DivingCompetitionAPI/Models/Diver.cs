@@ -8,8 +8,8 @@ namespace DivingCompetitionAPI.Models
         public string Name { get; set; } = "";
 
         [JsonIgnore]
-        public ICollection<CompetitionDiver> CompetitionDivers { get; set; } = new List<CompetitionDiver>();
+        public ICollection<CompetitionDiver>? CompetitionDivers { get; set; }
         [JsonIgnore]
-        public ICollection<DiverDive> DiverDives { get; set; } = new List<DiverDive>();
+        public ICollection<DiverDive>? DiverDives { get; set; }
     }
 }
