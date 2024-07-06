@@ -67,11 +67,63 @@ namespace DivingCompetitionAPI.Controllers
             return competition;
         }
 
-        // Método para generar un código único (puedes ajustarlo según tus necesidades)
+        // PUT: api/Competition/{id}
+        [HttpPut("{id}")]
+        public IActionResult UpdateCompetition(int id, [FromBody] Competition competition)
+        {
+            if (id != competition.CompetitionId)
+            {
+                return BadRequest("El ID de la competición en el cuerpo no coincide con el ID en la URL");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Entry(competition).State = EntityState.Modified;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Competitions.Any(c => c.CompetitionId == id))
+                {
+                    return NotFound("Competición no encontrada");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/Competition/{id}
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCompetition(int id)
+        {
+            var competition = _context.Competitions.Find(id);
+
+            if (competition == null)
+            {
+                return NotFound("Competición no encontrada");
+            }
+
+            _context.Competitions.Remove(competition);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        // Método para generar un código único
         private string GenerateUniqueCode()
         {
             const int codeLength = 6; // Longitud del código único
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Caracteres permitidos para el código
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
             string code;
             bool codeExists;

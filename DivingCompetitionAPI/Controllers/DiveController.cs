@@ -55,6 +55,74 @@ namespace DivingCompetitionAPI.Controllers
 
             return dive;
         }
+
+        // PUT: api/Dive/{id}
+        [HttpPut("{id}")]
+        public IActionResult UpdateDive(int id, [FromBody] Dive dive)
+        {
+            if (id != dive.DiveId)
+            {
+                return BadRequest("ID de clavado no coincide");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var existingDive = _context.Dives.AsNoTracking()
+                .FirstOrDefault(d => d.DiveId == id);
+
+            if (existingDive == null)
+            {
+                return NotFound("Clavado no encontrado");
+            }
+
+            // Verificar si el Dive ya existe con las mismas propiedades
+            var duplicateDive = _context.Dives
+                .FirstOrDefault(d => d.DiveId != id && d.DiveCode == dive.DiveCode && d.Group == dive.Group && d.Height == dive.Height);
+
+            if (duplicateDive != null)
+            {
+                return Conflict("Ya existe un Dive con el mismo DiveCode, Group y Height");
+            }
+
+            _context.Entry(dive).State = EntityState.Modified;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Dives.Any(d => d.DiveId == id))
+                {
+                    return NotFound("Clavado no encontrado");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/Dive/{id}
+        [HttpDelete("{id}")]
+        public IActionResult DeleteDive(int id)
+        {
+            var dive = _context.Dives.Find(id);
+
+            if (dive == null)
+            {
+                return NotFound("Clavado no encontrado");
+            }
+
+            _context.Dives.Remove(dive);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
     }
 }
-

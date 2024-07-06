@@ -73,5 +73,57 @@ namespace DivingCompetitionAPI.Controllers
 
             return score;
         }
+
+        // PUT: api/Score/{id}
+        [HttpPut("{id}")]
+        public IActionResult UpdateScore(int id, [FromBody] Score score)
+        {
+            if (id != score.ScoreId)
+            {
+                return BadRequest("El ID de la puntuación en el cuerpo no coincide con el ID en la URL");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Entry(score).State = EntityState.Modified;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Scores.Any(s => s.ScoreId == id))
+                {
+                    return NotFound("Puntuación no encontrada");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/Score/{id}
+        [HttpDelete("{id}")]
+        public IActionResult DeleteScore(int id)
+        {
+            var score = _context.Scores.Find(id);
+
+            if (score == null)
+            {
+                return NotFound("Puntuación no encontrada");
+            }
+
+            _context.Scores.Remove(score);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
     }
 }

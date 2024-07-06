@@ -57,5 +57,66 @@ namespace DivingCompetitionAPI.Controllers
 
             return diver;
         }
+
+        // PUT: api/Diver/{id}
+        [HttpPut("{id}")]
+        public IActionResult UpdateDiver(int id, [FromBody] Diver diver)
+        {
+            if (id != diver.DiverId)
+            {
+                return BadRequest("El ID del clavadista en el cuerpo no coincide con el ID en la URL");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Entry(diver).State = EntityState.Modified;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Divers.Any(d => d.DiverId == id))
+                {
+                    return NotFound("Clavadista no encontrado");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/Diver/{id}
+        [HttpDelete("{id}")]
+        public IActionResult DeleteDiver(int id)
+        {
+            var diver = _context.Divers.Find(id);
+
+            if (diver == null)
+            {
+                return NotFound("Clavadista no encontrado");
+            }
+
+            // Eliminar asociaciones del clavadista con competiciones y clavados
+            var competitionDivers = _context.CompetitionDivers.Where(cd => cd.DiverId == id).ToList();
+            var diverDives = _context.DiverDives.Where(dd => dd.DiverId == id).ToList();
+            var scores = _context.Scores.Where(s => s.DiverId == id).ToList();
+
+            _context.CompetitionDivers.RemoveRange(competitionDivers);
+            _context.DiverDives.RemoveRange(diverDives);
+            _context.Scores.RemoveRange(scores);
+            _context.Divers.Remove(diver);
+
+            _context.SaveChanges();
+
+            return NoContent();
+        }
     }
 }
