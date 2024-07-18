@@ -17,6 +17,16 @@ namespace DivingCompetitionAPI.Controllers
             _context = context;
         }
 
+
+        // POST: api/Judge
+        [HttpPost]
+        public ActionResult<Judge> CreateJudge([FromBody] Judge judge)
+        {
+            _context.Judges.Add(judge);
+            _context.SaveChanges();
+            return CreatedAtAction("GetJudge", new { id = judge.JudgeId }, judge);
+        }
+
         // POST: api/Judge/{competitionId}
         [HttpPost("{competitionId}")]
         public ActionResult<Judge> AddJudgeToCompetition(int competitionId, [FromBody] Judge judge)
@@ -91,6 +101,13 @@ namespace DivingCompetitionAPI.Controllers
             }
 
             return NoContent();
+        }
+
+        // GET: api/Judge
+        [HttpGet]
+        public ActionResult<IEnumerable<Judge>> GetJudges()
+        {
+            return _context.Judges.ToList();
         }
 
         // DELETE: api/Judge/{id}

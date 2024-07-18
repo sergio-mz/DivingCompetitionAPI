@@ -18,8 +18,8 @@ namespace DivingCompetitionAPI.Controllers
             _context = context;
         }
 
-        // POST: api/Competition/create
-        [HttpPost("create")]
+        // POST: api/Competition
+        [HttpPost]
         public ActionResult<Competition> CreateCompetition([FromBody] Competition competition)
         {
             if (!ModelState.IsValid)
@@ -46,6 +46,20 @@ namespace DivingCompetitionAPI.Controllers
                 // En caso de error al guardar la competición, retorna un error 500 Internal Server Error
                 return StatusCode(500, $"Error interno al crear la competición: {ex.Message}");
             }
+        }
+
+        // GET: api/Competition
+        [HttpGet]
+        public ActionResult<IEnumerable<Competition>> GetCompetitions()
+        {
+            var competitions = _context.Competitions
+                .Include(c => c.CompetitionDivers)
+                .ThenInclude(cd => cd.Diver)
+                .Include(c => c.CompetitionJudges)
+                .ThenInclude(cj => cj.Judge)
+                .ToList();
+
+            return Ok(competitions);
         }
 
         // GET: api/Competition/{id}
